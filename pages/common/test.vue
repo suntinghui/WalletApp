@@ -18,6 +18,8 @@
 		<button type="primary" size="default" class="margin-top" @tap="accountQueryByNbr()">查询账户信息（账号）</button>
 		
 		
+		
+		
 	</view>
 </template>
 
