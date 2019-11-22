@@ -6,9 +6,9 @@ import pageFoot from './components/page-foot.vue'
 import uLink from '@/components/uLink.vue'
 import store from './store'
 
-// Vue.prototype.BASE_URL = "http://118.190.205.233/qbhbcustomerapi";
+Vue.prototype.BASE_URL = "http://118.190.205.233/qbhbcustomerapi";
 // Vue.prototype.BASE_URL = "http://192.168.1.168/qbhbcustomerapi";
-Vue.prototype.BASE_URL = "http://qianbao.xiaomiqiu.com/qbhbcustomerapi";
+// Vue.prototype.BASE_URL = "http://qianbao.xiaomiqiu.com/qbhbcustomerapi";
 Vue.config.productionTip = false
 
 const msg = (title, duration=1500, mask=false, icon='none', position='bottom')=>{

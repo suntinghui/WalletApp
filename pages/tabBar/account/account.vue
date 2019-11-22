@@ -109,7 +109,7 @@
 			enterPaysetting: function(e) {
 				uni.navigateTo({
 					//url: '../../account/paysetting/paysetting'
-					url: '../../common/test'
+					url: '../../common/testTransfer'
 				});
 			},
 			enterBiopayment: function(e) {

@@ -251,7 +251,19 @@
 			}
         }
         ,{
-            "path" : "pages/common/test",
+            "path" : "pages/common/testUser",
+            "style" : {
+				"navigationBarTitleText": "钱包"
+			}
+        }
+        ,{
+            "path" : "pages/common/testMerchant",
+            "style" : {
+				"navigationBarTitleText": "钱包"
+			}
+        }
+        ,{
+            "path" : "pages/common/testTransfer",
             "style" : {
 				"navigationBarTitleText": "钱包"
 			}
