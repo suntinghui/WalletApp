@@ -3,21 +3,21 @@
 
 		<view class="cu-list menu-avatar ">
 			<view class="cu-item bg-title">
-				<view class="cu-avatar round lg" style="background-image:url(https://ossweb-img.qq.com/images/lol/img/champion/Taric.png);">
-
-				</view>
+				<image class="cu-avatar round lg" :src="this.userInfo.userPhoto" >
+				</image>
 				<view class="content text-white">
 					<view class="">
-						<view class="text-cut">周瑶</view>
+						<view class="text-cut">{{this.userInfo.customerName}}</view>
 					</view>
 					<view class=" flex">
 						<view class="text-cut">
-							zhouyaoiu@163.com
+							{{this.userInfo.mobileNbr}}
 						</view>
 					</view>
 				</view>
 			</view>
 		</view>
+		
 		<view class="cu-list menu sm-border">
 			<view class="cu-item arrow" @tap="enterChangeMobile">
 				<view class="content">
@@ -89,7 +89,7 @@
 		},
 		
 		methods: {
-			...mapMutations(['updateToken', 'logout', "setUserInfo"]),
+			...mapMutations(['updateToken', "setUserInfo", "logout"]),
 			
 			enterChangeMobile: function(e) {
 				uni.navigateTo({
@@ -142,7 +142,7 @@
 							_this.$token.updateToken(res.header.token);
 							
 						} else {
-							console.log("获取用户信息失败...")
+							console.log(res.data.msg)
 						}
 				    },
 					fail: (res) => {

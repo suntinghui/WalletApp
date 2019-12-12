@@ -10,45 +10,157 @@
 		<form>
 			<view class="cu-form-group solid-top">
 				<view class="title">银行</view>
-				<picker @change="PickerChange" :value="index" :range="bankLists">
+				<picker @change="PickerNameChange" :value="bankNameIndex" :range="bankLists" range-key="bankName">
 					<view class="picker" style="text-align: left;">
-						{{index>-1?bankLists[index]:'请选择银行卡'}}
+						{{bankNameIndex>-1?bankLists[bankNameIndex].bankName:'请选择银行卡'}}
 					</view>
 				</picker>
 			</view>
 			<view class="cu-form-group">
 				<view class="title">卡类型</view>
-				<picker @change="PickerChange" :value="index" :range="bankType">
+				<picker @change="PickerTypeChange" :value="bankTypeIndex" :range="bankType">
 					<view class="picker" style="text-align: left;">
-						{{index>-1?bankType[index]:'请选择银行卡类型'}}
+						{{bankTypeIndex>-1?bankType[bankTypeIndex]:'请选择银行卡类型'}}
 					</view>
 				</picker>
 			</view>
 			<view class="cu-form-group">
 				<view class="title">手机号</view>
-				<input placeholder="请输入银行预留的手机号" name="input"></input>
+				<input placeholder="请输入银行预留的手机号" name="input" maxlength="11" type="number" v-model.trim="phoneNum"></input>
 				<text class='cuIcon-info text-orange'></text>
 			</view>
 		</form>
 		<view class="padding flex flex-direction">
-			<navigator class="cu-btn bg-red margin-tb-sm lg radius" url="../../home/addBankCard-03/addBankCard-03">下一步</navigator>
+			<button class="cu-btn bg-red margin-tb-sm lg radius" @tap="addAction()">下一步</button>
 
 		</view>
 	</view>
 </template>
 
 <script>
+	var _this;
+	
+	import permision from "@/common/permission.js"
+	import util from '@/common/util.js'
+	
+	import {
+		mapMutations, mapGetters
+	} from 'vuex';
+	
 	export default {
 		data() {
 			return {
-				index: -1,
-				bankLists: ['中国银行', '建设银行', '工商银行'],
-				bankType: ['信用卡', '储蓄卡'],
+				cardNo:"",
+				bankNameIndex: -1,
+				bankTypeIndex: 0,
+				phoneNum:'',
+				
+				bankLists: [],
+				bankType: ['借记卡'],
 			}
 		},
+		
+		onLoad(options) {
+			_this = this;
+			this.cardNo = options.cardNo;
+			
+			this.getBankList();
+		},
+		
+		computed: {
+			...mapGetters(["token", "userInfo"]),
+		},
+		
 		methods: {
-			PickerChange(e) {
-				this.index = e.detail.value
+			...mapMutations(['updateToken', 'logout', "setUserInfo"]),
+			
+			PickerNameChange(e) {
+				this.bankNameIndex = e.detail.value
+			},
+			
+			PickerTypeChange(e) {
+				this.bankTypeIndex = e.detail.value
+			},
+			
+			// 查询系统支持的银行卡
+			getBankList: function(e) {
+				this.$api.loading("加载中...")
+				
+				uni.request({
+				    url: this.BASE_URL+'/bank/query/bankList',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+				    data: {
+				    },
+				    success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							_this.$token.updateToken(res.header.token);
+							
+							_this.bankLists = res.data.data;
+							
+							if (_this.bankLists.length == 1) {
+								_this.bankNameIndex = 0;
+							}
+							
+						} else {
+							console.log(res.data.msg)
+						}
+				    },
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
+			addAction:function(e) {
+				if (this.phoneNum.length == 0) {
+					this.$api.msg("请输入手机号");
+					return;
+				}
+				
+				this.$api.loading("加载中...")
+				
+				uni.request({
+				    url: this.BASE_URL+'/account/bindBankCard',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+				    data: {
+						subjectType: '2000',
+						bankName: _this.bankLists[_this.bankNameIndex].bankName,
+						bankNbr: _this.bankLists[_this.bankNameIndex].bankNbr,
+						accountNbr: _this.cardNo,
+						mobileNbr:_this.phoneNum,
+				    },
+				    success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							_this.$token.updateToken(res.header.token);
+							
+							_this.$api.msg("添加成功")
+							uni.navigateBack({
+								delta:2
+							})
+							
+						} else {
+							_this.$api.alert(res.data.msg+" 卡bin:"+_this.bankLists[_this.bankNameIndex].bankBin)
+						}
+				    },
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+				
 			},
 		}
 	}

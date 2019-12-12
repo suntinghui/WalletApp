@@ -35,11 +35,12 @@
 	</view>
 </template>
 
+
 <script>
 	var _this;
 	import wInput from '../../components/watch-login/watch-input.vue' //input
 	import wButton from '../../components/watch-login/watch-button.vue' //button
-
+	
 	import {
 		mapMutations,
 		mapState,
@@ -62,21 +63,22 @@
 
 		onLoad() {
 			_this = this;
-
+			
 			// 检查本地是否保存了token，如果有直接登录。
-			if (this.token != null) {
+			if (this.token != null && this.token != "") {
 				this.enterHome();
 			}
 		},
-
+		
 		computed: {
 			...mapGetters(["token"]),
 		},
 
 		methods: {
 			...mapMutations(['updateToken']),
-
+			
 			startLogin() {
+				
 				if (this.phoneData == "") {
 					this.$api.msg("用户名不能为空")
 					return;
@@ -88,7 +90,7 @@
 
 				this.loginAction();
 			},
-
+			
 			loginAction() {
 				this.$api.loading("加载中...")
 
@@ -114,7 +116,7 @@
 
 					},
 					fail: (res) => {
-						console.log("fail:" + res.data);
+						console.log("fail:" + JSON.stringify(res));
 					},
 					complete: (res) => {
 						uni.hideLoading();

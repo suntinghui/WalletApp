@@ -1,12 +1,23 @@
+<!-- 收款 -->
 <template>
 	<view>
-		<view class="bg-white text-center padding-lg">
-			<image src="../../../static/img-erweima.png" mode="widthFix" style="width: 60%;" class="margin-top-lg"></image>
+		<view class="bg-white text-center padding ">
+			<view class="text-sm margin-tb">
+				扫二维码直接向我付钱，安全又便捷
+			</view>
+
+			<view class="text-xxl padding text-center" v-if="transferAmount != 0">
+				<text class="text-price text-black text-bold text-sl">{{transferAmount}}</text>
+			</view>
+
+			<tki-qrcode class="qrimg" v-if="ifShow" cid="qrcode1" ref="qrcode" :val="val" :size="size" :unit="unit" :icon="icon"
+			 :iconSize="iconsize" :lv="lv" :onval="onval" :loadMake="loadMake" :usingComponents="true" @result="qrR" />
+
 			<view class="flex margin-top-lg  text-blue">
-				<navigator url="../setAmount/setAmount"  hover-class="none" class="flex-sub solid-right">
+				<navigator url="../setAmount/setAmount" hover-class="none" class="flex-sub solid-right">
 					设置金额
 				</navigator>
-				<view class="flex-sub">
+				<view class="flex-sub" @tap="saveQrCode()">
 					保存图片
 				</view>
 			</view>
@@ -23,18 +34,112 @@
 </template>
 
 <script>
+	import tkiQrcode from "../../../components/tki-qrcode/tki-qrcode.vue"
+	import {
+		mapMutations,
+		mapGetters
+	} from 'vuex';
+
+	var _this;
+
 	export default {
 		data() {
 			return {
-				
+				transferAmount: 0,
+				transferTip:'',
+
+				ifShow: true,
+				val: '', // 要生成的二维码值
+				size: 400, // 二维码大小
+				unit: 'upx', // 单位
+				background: '#b4e9e2', // 背景色
+				foreground: '#309286', // 前景色
+				pdground: '#32dbc6', // 角标色
+				icon: '', // 二维码图标
+				iconsize: 40, // 二维码图标大小
+				lv: 3, // 二维码容错级别 ， 一般不用设置，默认就行
+				onval: true, // val值变化时自动重新生成二维码
+				loadMake: true, // 组件加载完成后自动生成二维码
+				src: "", // 二维码生成后的图片地址或base64
 			}
 		},
+
+		components: {
+			tkiQrcode,
+		},
+
+		computed: {
+			...mapGetters(["token", "userInfo"]),
+		},
+
+		onShow: function() {
+			_this = this;
+
+			this.queryStaticCode();
+		},
+
 		methods: {
+			...mapMutations(['updateToken', "setUserInfo"]),
+
+			queryStaticCode: function() {
+				this.$api.loading("加载中...")
+
+				uni.request({
+					url: this.BASE_URL + '/QRcode/make/static/payeeCode',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						codeType: '0',
+						transferAmount: _this.transferAmount
+					},
+					success: (res) => {
+						console.log("===" + JSON.stringify(res));
+
+						if (res.data.code == "B0000") {
+							_this.val = res.data.data;
+
+						} else {
+							uni.showModal({
+								title: "提示",
+								showCancel: false,
+								content: res.data.msg,
+								success: function(res) {
+									if (res.confirm) {
+										uni.switchTab({
+											url: '../../tabBar/home/home'
+										});
+									}
+								}
+							})
+						}
+
+					},
+					fail: (res) => {
+						console.log("fail:" + res.data);
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+
+			qrR(res) {
+				this.src=res;
+			},
 			
+			saveQrCode() {
+				this.$refs.qrcode._saveCode()
+			},
+
 		}
 	}
 </script>
 
 <style>
-
+	.qrimg {
+		margin-top: 30upx;
+	}
 </style>

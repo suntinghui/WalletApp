@@ -61,7 +61,7 @@
 
 		</view>
 		<view class="padding flex flex-direction">
-			<button class="cu-btn bg-red margin-tb-sm lg">提现</button>
+			<button class="cu-btn bg-red margin-tb-sm lg" >提现</button>
 		</view>
 	</view>
 </template>

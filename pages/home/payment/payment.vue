@@ -1,16 +1,27 @@
 <template>
 	<view>
-		<view class="bg-white padding text-center">
-			<image src="../../../static/img-tiaoxingma.png" mode="widthFix" style="width: 100%;"></image>
-			<view class=" text-gray">2000 <text>****</text> 查看数字</view>
-			<image src="../../../static/img-erweima.png" mode="widthFix" style="width: 60%;" class="margin-top-lg"></image>
+		<view class="bg-white padding text-center solid-bottom">
+			<!-- <image src="../../../static/img-tiaoxingma.png" mode="widthFix" style="width: 100%;"></image> -->
+
+			<view>
+				<view class=" text-gray padding-tb-sm">点击可查看付款码数字</view>
+				<tkiBarcode cid="code128" :loadMake="true" :opations="opations" :onval="true" format="code128" :val="val" ref="code128"
+				 @result="code128" />
+			</view>
+
+			<view class="padding-tb">
+				<tki-qrcode class="qrimg" v-if="ifShow" cid="qrcode1" ref="qrcode" :val="val" :size="size" :unit="unit" :icon="icon"
+				 :iconSize="iconsize" :lv="lv" :onval="onval" :loadMake="loadMake" :usingComponents="true" loadingText="正在刷新..." @result="qrR" />
+			</view>
+
 		</view>
+		
 		<view class="cu-list menu bg-white select-payment solid-top">
 			<view class="cu-item arrow border-top">
 				<button class="cu-btn content" @tap="showModal" data-target="bottomModal">
 					<image src="../../../static/icon-huabei.png" class="png" mode="aspectFit"></image>
 					<view class="text-grey text-left">
-						<view class="font-bold">花呗分期</view>
+						<view class="font-bold">{{bankList[current].accountNbrFormat}}</view>
 						<view>优先使用此付款方式</view>
 					</view>
 				</button>
@@ -19,26 +30,18 @@
 		<view class="cu-modal bottom-modal" :class="modalName=='bottomModal'?'show':''">
 			<view class="cu-dialog">
 				<view class="cu-bar bg-white">
-					<view class="action text-green">确定</view>
-					<view class="action text-blue" @tap="hideModal">取消</view>
+					<view class="action text-grey" @tap="hideModal">取消</view>
+					<view class="action text-green" @tap="hideModal">确定</view>
 				</view>
-				<view class="">
-					<radio-group class="block" @change="RadioChange">
+				
+				<view class="uni-list">
+					<radio-group class="block" v-for="(item, index) in bankList" @change="RadioChange">
 						<view class="cu-form-group">
-							<view class="title">花呗</view>
-							<radio :class="radio=='A'?'checked':''" :checked="radio=='A'?true:false" value="A"></radio>
-						</view>
-						<view class="cu-form-group">
-							<view class="title">工商银行</view>
-							<radio :class="radio=='B'?'checked':''" :checked="radio=='B'?true:false" value="B"></radio>
-						</view>
-						<view class="cu-form-group">
-							<view class="title">农业银行</view>
-							<radio :class="radio=='C'?'checked':''" :checked="radio=='C'?true:false" value="C"></radio>
-						</view>
-						<view class="cu-form-group">
-							<view class="title">建设银行</view>
-							<radio :class="radio=='D'?'checked':''" :checked="radio=='D'?true:false" value="D"></radio>
+							<view class="padding-sm solid-bottom">
+								<view class="title">{{item.accountNbrFormat}}</view>
+								<view class="desc text-sm">单笔限额{{item.singleLimitAmount}}元,每日限额{{item.dayLimitAmount}}元</view>
+							</view>
+							<radio :checked="index === current" :value="item.id"></radio>
 						</view>
 					</radio-group>
 				</view>
@@ -48,30 +51,184 @@
 </template>
 
 <script>
+	import tkiQrcode from "../../../components/tki-qrcode/tki-qrcode.vue"
+	import tkiBarcode from "../../../components/tki-barcode/tki-barcode.vue"
+	import otp from '../../../common/otp.js'
+
+	import {
+		mapMutations,
+		mapGetters
+	} from 'vuex';
+
+	var _this;
+
+
 	export default {
 		data() {
 			return {
+				bankList: [],
+
+				ifShow: true,
+				val: '000000000000000000', // 要生成的二维码值
+				size: 350, // 二维码大小
+				unit: 'upx', // 单位
+				background: '#b4e9e2', // 背景色
+				foreground: '#309286', // 前景色
+				pdground: '#32dbc6', // 角标色
+				icon: '', // 二维码图标
+				iconsize: 40, // 二维码图标大小
+				lv: 3, // 二维码容错级别 ， 一般不用设置，默认就行
+				onval: true, // val值变化时自动重新生成二维码
+				loadMake: true, // 组件加载完成后自动生成二维码
+				src: '', // 二维码生成后的图片地址或base64
+
+
+				opations: {
+					// format: "CODE128",//选择要使用的条形码类型 微信支持的条码类型有 code128\code39\ena13\ean8\upc\itf14\
+					width: 5, //设置条之间的宽度
+					height: 180, //高度
+					displayValue: false, //是否在条形码下方显示文字
+					textAlign: "left", //设置文本的水平对齐方式
+					textPosition: "bottom", //设置文本的垂直位置
+					textMargin: 0, //设置条形码和文本之间的间距
+					// fontSize: 24,//设置文本的大小
+					// fontColor: "#0000ef",//设置文本的颜色
+					// lineColor: "#0000ef",//设置条形码的颜色
+					background: "#FFFFFF", //设置条形码的背景色
+					margin: 0, //设置条形码周围的空白边距
+					// marginTop: 10,//设置条形码周围的上边距
+					// marginBottom: 20,//设置条形码周围的下边距
+					// marginLeft: 30,//设置条形码周围的左边距
+					// marginRight: 40,//设置条形码周围的右边距
+				},
+
 				modalName: null,
-				radio: 'A',
+				current: 0,
 			}
 		},
+
+		components: {
+			tkiQrcode,
+			tkiBarcode,
+		},
+
+		computed: {
+			...mapGetters(["token", "userInfo"]),
+		},
+		
+		onShow: function() {
+			_this = this;
+
+			this.getAccountList();
+		},
+
 		methods: {
+			...mapMutations(['updateToken', "setUserInfo"]),
+
 			showModal(e) {
 				this.modalName = e.currentTarget.dataset.target
 			},
+
 			hideModal(e) {
 				this.modalName = null
 			},
-			RadioChange(e) {
-				this.radio = e.detail.value
+
+			RadioChange(evt) {
+				for (let i = 0; i < this.bankList.length; i++) {
+					if (this.bankList[i].id == evt.target.value) {
+						this.current = i;
+						break;
+					}
+				}
+				
+				_this.val = _this.genOTP();
 			},
+
+			creatQrcode() {
+				this.$refs.qrcode._makeCode()
+			},
+
+			createBarcode() {
+				this.$refs.code128._makeCode()
+			},
+
+			clearQrcode() {
+				this.$refs.qrcode._clearCode()
+				this.val = ''
+			},
+
+			qrR(res) {
+				this.src = res
+			},
+
+			code128(v) {},
+
+			getAccountList: function(e) {
+				uni.request({
+					url: this.BASE_URL + '/account/query/byType',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						accountType: ''
+					},
+					success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+
+							_this.bankList = res.data.data;
+							if (_this.bankList.length > 0) {
+								
+								_this.val = _this.genOTP();
+
+							} else {
+								uni.showModal({
+									title: "提示",
+									content: "请选择添加银行卡",
+									showCancel: false,
+									success: function(res) {
+										if (res.confirm) {
+											uni.switchTab({
+												url: '/pages/tabBar/home/home'
+											});
+										}
+									}
+								})
+							}
+
+
+							_this.$token.updateToken(res.header.token);
+
+						} else {
+							_this.$api.alert(res.data.msg)
+						}
+					},
+					fail: (res) => {},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+
+			genOTP() {
+				var newToken = this.token + this.bankList[this.current].id;
+				var result = otp.makeCode(newToken, this.userInfo.id);
+				console.log("result:" + result)
+				return result;
+			},
+
 		}
 	}
 </script>
 
 <style>
-	.select-payment{
-	 padding: 10px 0;
+	.select-payment {
+		padding: 10px 0;
 	}
 
+	.qrimg {
+		margin-top: 30upx;
+	}
 </style>

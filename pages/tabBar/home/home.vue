@@ -32,24 +32,25 @@
 
 		<view class="cu-list grid col-2 no-border card-menu shadow shadow-lg">
 			<view class="cu-item solid-right">
-				<navigator url="../../home/withdraw/withdraw" hover-class="none">
+				<navigator url="../../home/balance/balance" hover-class="none">
 					<view class="">余额</view>
 					<view class="text-sm text-gray" style="height: 40rpx;"></view>
-					<view class="text-danger font-bold">฿100.00</view>
+					<view class="text-danger font-bold">฿ {{this.accountInfo.balanceAmount}}</view>
 				</navigator>
 			</view>
 			<view class="cu-item" @tap="showHuabei" >
 				<view>
 					<view class="">钱包花呗</view>
 					<view class="text-sm text-gray" style="height: 40rpx;">通用额度</view>
-					<view class="text-danger font-bold">฿495034.00</view>
+					<view class="text-danger font-bold">฿  {{this.userInfo.creditAmount}}</view>
 				</view>
 			</view>
 		</view>
 
 		<view class="cu-list menu sm-border card-menu shadow shadow-lg">
 			<view class="cu-item arrow">
-				<navigator url="../../home/billLists/billLists" hover-class="none" class="content">
+				<!-- <navigator url="../../home/billLists/billLists" hover-class="none" class="content"> -->
+				<navigator url="../../home/payaction/payaction" hover-class="none" class="content">
 					<image src="/static/icon-zhangdan.png" class="png" mode="aspectFit"></image>
 					<text class="text-grey">账单</text>
 				</navigator>
@@ -71,35 +72,136 @@
 	</view>
 </template>
 <script>
+	var _this;
+	
+	import permision from "@/common/permission.js"
+	
+	import {
+		mapMutations, mapGetters
+	} from 'vuex';
+	
 	export default {
-		components: {
-
-		},
 		data() {
 			return {
+				accountInfo: {},
+				
 				indicatorDots: true,
 				autoplay: true,
 				interval: 2000,
 				duration: 500
 			};
 		},
+		
+		onLoad:function(){
+			_this = this;
+		},
+		
+		computed: {
+			...mapGetters(["token", "userInfo"]),
+		},
 
 		methods: {
-			scan: function() {
+			...mapMutations(['updateToken', "setUserInfo"]),
+			
+			async scan() {
+				// #ifdef APP-PLUS
+				let status = await this.checkPermission();
+				if (status !== 1) {
+				    return;
+				}
+				
+				// #endif
 				uni.scanCode({
 					success: (res) => {
-						uni.showModal({
-							title:'扫码成功',
-							content:res.result,
-							confirmText:'确定',
-							showCancel:false
+						console.log("------------"+ JSON.stringify(res))
+						
+						this.result = res.result
+						
+						this.scanCodeDoneAction(this.result)
+					},
+					fail: (err) => {
+						// #ifdef MP
+						uni.getSetting({
+							success: (res) => {
+								let authStatus = res.authSetting['scope.camera'];
+								if (!authStatus) {
+									uni.showModal({
+										title: '授权失败',
+										content: '钱包需要使用您的相机，请在设置界面打开相关权限',
+										success: (res) => {
+											if (res.confirm) {
+												uni.openSetting()
+											}
+										}
+									})
+								}
+							}
 						})
+						// #endif
 					}
 				});
 			},
+			// #ifdef APP-PLUS
+			async checkPermission(code) {
+				let status = permision.isIOS ? await permision.requestIOS('camera') :
+					await permision.requestAndroid('android.permission.CAMERA');
+			
+				if (status === null || status === 1) {
+					status = 1;
+				} else {
+					uni.showModal({
+						content: "需要相机权限",
+						confirmText: "设置",
+						success: function(res) {
+							if (res.confirm) {
+								permision.gotoAppSetting();
+							}
+						}
+					})
+				}
+				return status;
+			},
+			// #endif
+			
+			scanCodeDoneAction(code) {
+				this.$api.loading("加载中...")
+				
+				uni.request({
+					url: this.BASE_URL + '/QRcode/scan/code',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						code: code,
+					},
+					success: (res) => {
+						console.log("===" + JSON.stringify(res));
+			
+						if (res.data.code == "B0000") {
+							uni.navigateTo({
+								url:'/pages/home/payaction/payaction?data='+JSON.stringify(res.data.data)+'&scancode='+ code
+							})
+							
+						} else {
+							_this.$api.alert(res.data.msg);
+						}
+			
+					},
+					fail: (res) => {
+						console.log("fail:" + res.data);
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
 			changeIndicatorDots(e) {
 				this.indicatorDots = !this.indicatorDots;
 			},
+			
 			changeAutoplay(e) {
 				this.autoplay = !this.autoplay;
 			},
@@ -113,7 +215,75 @@
 				uni.switchTab({
 					url: '../huabei/huabei'
 				})
-			}
+			},
+			
+			onShow:function(){
+				this.queryBalance();
+				this.getUserInfo();
+			},
+			
+			queryBalance: function(e) {
+				uni.request({
+				    url: this.BASE_URL+'/account/query/byType',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+				    data: {
+				    },
+				    success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							res.data.data.forEach(item => {
+								if (item.accountType == "10") {
+									_this.accountInfo = item;
+								}
+							})
+							_this.$token.updateToken(res.header.token);
+							
+						} else {
+							console.log(res.data.msg)
+						}
+				    },
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
+			getUserInfo: function(e) {
+				
+				uni.request({
+				    url: this.BASE_URL+'/login/query/userInfo',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+				    data: {
+						
+				    },
+				    success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							_this.setUserInfo(res.data.data);
+							
+							_this.$token.updateToken(res.header.token);
+							
+						} else {
+							console.log(res.data.msg)
+						}
+				    },
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
 		}
 	};
 </script>

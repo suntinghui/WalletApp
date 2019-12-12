@@ -119,14 +119,21 @@
 						loginPassword: _this.passData
 					},
 					success: (res) => {
+						console.log(JSON.stringify(res));
+						
 						if (res.data.code == "B0000") {
 							uni.showToast({
 								title: "注册成功"
 							})
+							
+							uni.navigateBack({
+							    delta: 1
+							});
 
 							_this.$token.updateToken(res.header.token);
+							
 						} else {
-							_this.$api.alert("res.data.errorMsg")
+							_this.$api.alert(res.data.errorMsg)
 						}
 					},
 					fail: (res) => {

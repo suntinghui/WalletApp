@@ -391,6 +391,7 @@
 				});
 			},
 			
+			
 			// 钱包提现
 			qb2BankCardTransfer: function() {
 				this.$api.loading();
@@ -404,7 +405,17 @@
 						'token': _this.token
 					},
 				    data: {
-						accountType: "10",
+						payeeAccountNbr: "10",
+						payeeAccountType: "30",
+						currency: "CNY",
+						transferAmount: "1000",
+						customerNbr: "10",
+						payerName: "张三",
+						payerAccountNbr: "432523453223421",
+						payerAccountType: "10",
+						transferPassword: "123456",
+						payerSubjectType: "2000",
+						transferType: "504",
 				    },
 				    success: (res) => {
 						console.log("==="+JSON.stringify(res));
@@ -449,8 +460,21 @@
 						'token': _this.token
 					},
 				    data: {
-						accountNbr: "101911219065795741",
-						accountStatus: "1"
+						orderNbr: "101911219065795741",
+						merchantNbr: "1",
+						merchantName: "1",
+						currency: "CNY",
+						transferAmount: "1000",
+						customerNbr: "13245325432",
+						payerName: "王刚",
+						payerAccountNbr: "134532453254235",
+						payerAccountType: "10",
+						transferPassword: "123456",
+						productName: "产品名称",
+						transferDesc: "备注",
+						payeeSubjectType: "3000",
+						payerSubjectType: "2000",
+						transferType: "301",
 				    },
 				    success: (res) => {
 						console.log("==="+JSON.stringify(res));
@@ -495,8 +519,21 @@
 						'token': _this.token
 					},
 				    data: {
-						accountNbr: "101911219065795741",
-						accountStatus: "1"
+						currency: "CNY",
+						transferAmount: "1000",
+						payeeNbr: "65532666666",
+						payeName: "小四",
+						payeeAccountNbr: "1324214324433",
+						payeeAccountType: "10",
+						customerNbr: "3453223434532532",
+						payerName: "钱多",
+						payerAccountNbr: "243524532",
+						payerAccountType: "10",
+						transferPassword: "123456",
+						transferDesc: "1000",
+						payeeSubjectType: "2000",
+						payerSubjectType: "2000",
+						transferType: "501"
 				    },
 				    success: (res) => {
 						console.log("==="+JSON.stringify(res));

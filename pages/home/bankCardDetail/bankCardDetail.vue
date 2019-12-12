@@ -2,10 +2,10 @@
 	<view>
 		<view class="cu-list menu-avatar card-menu margin-top">
 			<view class="cu-item">
-				<view class="cu-avatar round lg" style="background-image:url(https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg);"></view>
+				<view class="cu-avatar round lg" style="background-image:url(/static/bank-icbc.png);"></view>
 				<view class="content">
-					<view class="text-grey">中国银行</view>
-					<text class="text-bold text-lg">6222 **** **** 3452</text>
+					<view class="text-grey">{{bankInfo.bankName}}</view>
+					<text class="text-bold text-lg">**** **** **** {{bankInfo.accountNbr}}</text>
 					
 				</view>
 				<view class="action">
@@ -26,7 +26,7 @@
 					<text class="text-grey">单笔限额</text>
 				</view>
 				<view class="action">
-					<text class="text-grey">￥50000</text>
+					<text class="text-grey">￥{{bankInfo.singleLimitAmount}}</text>
 				</view>
 			</view>
 			<view class="cu-item">
@@ -34,7 +34,7 @@
 					<text class="text-grey">每日限额</text>
 				</view>
 				<view class="action">
-					<text class="text-grey">￥50000</text>
+					<text class="text-grey">￥{{bankInfo.dayLimitAmount}}</text>
 				</view>
 			</view>
 		</view>
@@ -45,9 +45,14 @@
 	export default {
 		data() {
 			return {
-
+				bankInfo: {}
 			}
 		},
+		
+		onLoad(options) {
+			this.bankInfo = JSON.parse(options.data)
+		},
+		
 		methods: {
 
 		}

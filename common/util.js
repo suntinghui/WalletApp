@@ -62,6 +62,18 @@ function formatAmount(number, decimals, dec_point, thousands_sep) {
   　　　　return s.join(dec);
  }
  
+ function currentMonth() {
+	 var curDate = new Date();
+ 	var year = curDate.getFullYear();
+ 	var month = curDate.getMonth()+1;
+ 		
+ 	if (month<10) {
+ 		return year+"0"+month;
+ 	} else {
+ 		return year+""+month;
+ 	}
+ }
+ 
 var dateUtils = {
 	UNITS: {
 		'年': 31557600000,
@@ -103,5 +115,6 @@ module.exports = {
 	formatTime: formatTime,
 	formatLocation: formatLocation,
 	formatAmount: formatAmount,
-	dateUtils: dateUtils
+	dateUtils: dateUtils,
+	currentMonth: currentMonth
 }

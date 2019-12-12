@@ -11,40 +11,40 @@ isPwd：是否是密码模式
 	<view class="code-area">
 		<view class="flex-box">
 			<input
+			    :value="val"
 				type="number"
 				focus="true"
 				:maxlength="maxlength"
 				class="hide-input"
 				@input="getVal"
-				value=""
 			/>
 			<view v-bind:class="['item', { active: codeIndex == 1 }]">
 				<view class="line"></view>
 				<block v-if="isPwd && codeArr.length >= 1">
 					<text class="dot">.</text>
 				</block>
-				<block v-else>	{{ codeArr[0]==undefined?"":codeArr[0] }}</block>
+				<block v-else>	{{ codeArr[0] ? codeArr[0] : ''}}</block>
 			</view>
 			<view v-bind:class="['item', { active: codeIndex == 2 }]">
 				<view class="line"></view>
 				<block v-if="isPwd && codeArr.length >= 2">
 					<text class="dot">.</text>
 				</block>
-				<block v-else>	{{ codeArr[1]==undefined?"":codeArr[1] }}</block>
+				<block v-else>	{{ codeArr[1] ? codeArr[1] : ''}}</block>
 			</view>
 			<view v-bind:class="['item', { active: codeIndex == 3 }]">
 				<view class="line"></view>
 				<block v-if="isPwd && codeArr.length >= 3">
 					<text class="dot">.</text>
 				</block>
-				<block v-else>	{{ codeArr[2]==undefined?"":codeArr[2] }}</block>
+				<block v-else>	{{ codeArr[2] ? codeArr[2] : ''}}</block>
 			</view>
 			<view v-bind:class="['item', { active: codeIndex == 4 }]">
 				<view class="line"></view>
 				<block v-if="isPwd && codeArr.length >= 4">
 					<text class="dot">.</text>
 				</block>
-				<block v-else>	{{ codeArr[3]==undefined?"":codeArr[3] }}</block>
+				<block v-else>	{{ codeArr[3] ? codeArr[3] : ''}}</block>
 			</view>
 			<block v-if="maxlength === 6">				
 				<view v-bind:class="['item', { active: codeIndex == 5 }]">
@@ -52,14 +52,14 @@ isPwd：是否是密码模式
 					<block v-if="isPwd && codeArr.length >= 5">
 						<text class="dot">.</text>
 					</block>
-					<block v-else>	{{ codeArr[4]==undefined?"":codeArr[4] }}</block>
+					<block v-else>	{{ codeArr[4] ? codeArr[4] : ''}}</block>
 				</view>
 				<view v-bind:class="['item', { active: codeIndex == 6 }]">
 					<view class="line"></view>
 					<block v-if="isPwd && codeArr.length >= 6">
 						<text class="dot">.</text>
 					</block>
-					<block v-else>	{{ codeArr[5]==undefined?"":codeArr[5] }}</block>
+					<block v-else>	{{ codeArr[5] ? codeArr[5] : ''}}</block>
 				</view>
 			</block>
 			
@@ -85,13 +85,15 @@ export default {
 	data() {
 		return {
 			codeIndex: 1, //下标
-			codeArr: ['','','','']
+			codeArr: [],
+			val:'',//输入框的值
 		};
 	},
 	methods: {
 		//取值
 		getVal(e) {
 			let { value } = e.detail;
+			this.val=value;
 			// console.log('验证码:', value);
 			let arr = value.split('');
 			this.codeIndex = arr.length + 1;
@@ -101,6 +103,12 @@ export default {
 				//输入完成
 				this.$emit('finish',this.codeArr.join(''));
 			}
+		},
+		//清除验证码或者密码
+		clear(){
+			this.codeIndex=1;
+			this.codeArr=[];
+			this.val="";
 		}
 	}
 };
@@ -118,15 +126,15 @@ export default {
 
 	.item {
 		position: relative;
-		width: 100upx;
-		height: 100upx;
-		margin-right: 18upx;
+		width: 80upx;
+		height: 80upx;
+		margin-right: 0upx;
 		font-size: 30upx;
 		font-weight: bold;
 		color: #333333;
-		line-height: 100upx;
+		line-height: 80upx;
 		box-sizing: border-box;
-		border-bottom: 2upx solid #cccccc;
+		border: 1upx solid #cccccc;
 	}
 
 	.item:last-child {
@@ -134,7 +142,7 @@ export default {
 	}
 
 	.active {
-		border-color: #ff4b4b;
+		border-color: #04BE02;
 	}
 	.active .line {
 		display: block;
@@ -146,9 +154,9 @@ export default {
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		width: 2upx;
+		width: 1upx;
 		height: 40upx;
-		background: #ff4b4b;
+		background: #04BE02;
 		animation: twinkling 1s infinite ease;
 	}
 
