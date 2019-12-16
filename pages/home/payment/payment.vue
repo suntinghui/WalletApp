@@ -4,14 +4,14 @@
 			<!-- <image src="../../../static/img-tiaoxingma.png" mode="widthFix" style="width: 100%;"></image> -->
 
 			<view>
-				<view class=" text-gray padding-tb-sm">点击可查看付款码数字</view>
+				<view class=" text-gray padding-tb-sm" @tap="showCode()">点击可查看付款码数字</view>
 				<tkiBarcode cid="code128" :loadMake="true" :opations="opations" :onval="true" format="code128" :val="val" ref="code128"
 				 @result="code128" />
 			</view>
 
 			<view class="padding-tb">
 				<tki-qrcode class="qrimg" v-if="ifShow" cid="qrcode1" ref="qrcode" :val="val" :size="size" :unit="unit" :icon="icon"
-				 :iconSize="iconsize" :lv="lv" :onval="onval" :loadMake="loadMake" :usingComponents="true" loadingText="正在刷新..." @result="qrR" />
+				 :iconSize="iconsize" :lv="lv" :onval="onval" :loadMake="loadMake" :usingComponents="true" loadingText="正在加载" @result="qrR" />
 			</view>
 
 		</view>
@@ -75,7 +75,7 @@
 				background: '#b4e9e2', // 背景色
 				foreground: '#309286', // 前景色
 				pdground: '#32dbc6', // 角标色
-				icon: '', // 二维码图标
+				icon: '/static/gold.png', // 二维码图标
 				iconsize: 40, // 二维码图标大小
 				lv: 3, // 二维码容错级别 ， 一般不用设置，默认就行
 				onval: true, // val值变化时自动重新生成二维码
@@ -104,6 +104,8 @@
 
 				modalName: null,
 				current: 0,
+				
+				intervalID: 0,
 			}
 		},
 
@@ -116,10 +118,14 @@
 			...mapGetters(["token", "userInfo"]),
 		},
 		
-		onShow: function() {
+		onLoad: function() {
 			_this = this;
 
 			this.getAccountList();
+		},
+		
+		onUnload() {
+			this.stopRefreshCodeTask();
 		},
 
 		methods: {
@@ -141,7 +147,7 @@
 					}
 				}
 				
-				_this.val = _this.genOTP();
+				_this.refreshQRCode();
 			},
 
 			creatQrcode() {
@@ -162,6 +168,10 @@
 			},
 
 			code128(v) {},
+			
+			showCode() {
+				this.$api.alert(this.val)
+			},
 
 			getAccountList: function(e) {
 				uni.request({
@@ -181,7 +191,9 @@
 							_this.bankList = res.data.data;
 							if (_this.bankList.length > 0) {
 								
-								_this.val = _this.genOTP();
+								_this.refreshQRCode();
+								
+								_this.startRefreshCodeTask()
 
 							} else {
 								uni.showModal({
@@ -210,6 +222,19 @@
 						uni.hideLoading();
 					}
 				});
+			},
+			
+			startRefreshCodeTask() {
+				this.intervalID = setInterval(this.refreshQRCode, 10*1000);
+			},
+			
+			stopRefreshCodeTask() {
+				console.log("停止定时刷新。。。")
+				clearInterval(this.intervalID);
+			},
+			
+			refreshQRCode() {
+				this.val = this.genOTP();
 			},
 
 			genOTP() {

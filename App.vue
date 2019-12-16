@@ -21,6 +21,7 @@ export default {
 <style>
 @import "colorui/main.css";
 @import "colorui/icon.css";
+
 /*自定义图标 */
 @import './common/iconfont.css';
 /*自定义我css */

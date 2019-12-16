@@ -8,7 +8,7 @@
 						<view class="padding text-xm">我的零钱</view>
 						
 						<view class="padding-tb">
-							<text class="text-price text-black text-bold text-sl"> {{balance}}</text>
+							<text class="text-price text-black text-bold text-sl"> {{balanceAmount}}</text>
 						</view>
 					</view>
 				</view>
@@ -35,8 +35,7 @@
 	export default {
 		data() {
 			return {
-				balance: 0.00
-
+				balanceAmount: 0.00,
 			}
 		},
 		
@@ -62,7 +61,7 @@
 			},
 			
 			doWithdraw: function(e) {
-				if (this.balance == 0) {
+				if (this.balanceAmount == 0) {
 					this.$api.msg("没有可提现的金额")
 				} else {
 					uni.navigateTo({
@@ -80,15 +79,12 @@
 						'token': _this.token
 					},
 				    data: {
+						accountType: '10'
 				    },
 				    success: (res) => {
 						console.log(JSON.stringify(res));
 						if (res.data.code == "B0000") {
-							res.data.data.forEach(item => {
-								if (item.accountType == "现金") {
-									_this.balance = item.balanceAmountAll;
-								}
-							})
+							_this.balanceAmount = res.data.data[0].balanceAmount
 							_this.$token.updateToken(res.header.token);
 							
 						} else {
@@ -102,6 +98,7 @@
 					}
 				});
 			},
+			
 		}
 	}
 </script>

@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<swiper class="swiper" :indicator-dots="indicatorDots" :autoplay="autoplay" :interval="interval" :duration="duration">
+		<swiper class="swiper" :indicator-dots="indicatorDots" indicator-color="rgba(255,255, 255, 0.5)" indicator-active-color="rgba(255,255, 255, 1)" :autoplay="autoplay" :interval="interval" :duration="duration">
 			<swiper-item>
 				<image src="../../../static/slider-01.png" class="slider-item" mode="widthFix"></image>
 			</swiper-item>
@@ -11,7 +11,7 @@
 				<image src="../../../static/slider-01.png" class="slider-item" mode="widthFix"></image>
 			</swiper-item>
 		</swiper>
-		<view class="cu-list grid col-3 no-border text-grid card-menu shadow shadow-lg" style="margin-top: -20px; position: relative; z-index: 9999;">
+		<view class="cu-list grid col-3 no-border text-grid card-menu shadow shadow-lg" style="margin-top: 20px; position: relative; z-index: 9999;">
 			<view class="cu-item" @click="scan">
 				<view class="iconfont cu-grid-icon">&#xe629;</view>
 				<text class="text-grid">扫一扫</text>
@@ -35,14 +35,22 @@
 				<navigator url="../../home/balance/balance" hover-class="none">
 					<view class="">余额</view>
 					<view class="text-sm text-gray" style="height: 40rpx;"></view>
-					<view class="text-danger font-bold">฿ {{this.accountInfo.balanceAmount}}</view>
+					<view class="text-danger font-bold text-price">{{balanceAmount}}</view>
 				</navigator>
 			</view>
 			<view class="cu-item" @tap="showHuabei" >
 				<view>
 					<view class="">钱包花呗</view>
-					<view class="text-sm text-gray" style="height: 40rpx;">通用额度</view>
-					<view class="text-danger font-bold">฿  {{this.userInfo.creditAmount}}</view>
+					
+					<view v-if="hasOpenHuabeiAccount">
+						<view class="text-sm text-gray" style="height: 40rpx;">通用额度</view>
+						<view class="text-danger font-bold text-price">{{huabeiAmount}}</view>
+					</view>
+					
+					<view v-if="!hasOpenHuabeiAccount" style="margin-top: 10px;">
+						<button class="cu-btn round line-blue shadow" @tap="openHuaBeiAccount()">立即开通</button>
+					</view>
+					
 				</view>
 			</view>
 		</view>
@@ -83,7 +91,9 @@
 	export default {
 		data() {
 			return {
-				accountInfo: {},
+				balanceAmount: 0.00,
+				huabeiAmount: 0.00,
+				hasOpenHuabeiAccount: true,
 				
 				indicatorDots: true,
 				autoplay: true,
@@ -113,7 +123,7 @@
 				// #endif
 				uni.scanCode({
 					success: (res) => {
-						console.log("------------"+ JSON.stringify(res))
+						console.log(JSON.stringify(res))
 						
 						this.result = res.result
 						
@@ -211,17 +221,24 @@
 			durationChange(e) {
 				this.duration = e.target.value;
 			},
+			
 			showHuabei: function(e) {
-				uni.switchTab({
-					url: '../huabei/huabei'
-				})
+				if (this.hasOpenHuabeiAccount) {
+					uni.switchTab({
+						url: '../huabei/huabei'
+					})
+				}
+				
 			},
 			
 			onShow:function(){
 				this.queryBalance();
+				this.queryHuabeiAmount();
 				this.getUserInfo();
 			},
 			
+			
+			// 查询余额
 			queryBalance: function(e) {
 				uni.request({
 				    url: this.BASE_URL+'/account/query/byType',
@@ -231,15 +248,12 @@
 						'token': _this.token
 					},
 				    data: {
+						accountType: '10'
 				    },
 				    success: (res) => {
 						console.log(JSON.stringify(res));
 						if (res.data.code == "B0000") {
-							res.data.data.forEach(item => {
-								if (item.accountType == "10") {
-									_this.accountInfo = item;
-								}
-							})
+							_this.balanceAmount = res.data.data[0].balanceAmount
 							_this.$token.updateToken(res.header.token);
 							
 						} else {
@@ -254,8 +268,77 @@
 				});
 			},
 			
-			getUserInfo: function(e) {
+			// 查询花呗额度
+			queryHuabeiAmount: function(e) {
+				uni.request({
+				    url: this.BASE_URL+'/account/query/byType',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+				    data: {
+						accountType: '205'
+				    },
+				    success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							// 未开通花呗
+							if (res.data.errorCode == "B100205") {
+								_this.hasOpenHuabeiAccount = false
+							} else {
+								_this.hasOpenHuabeiAccount = true
+								_this.huabeiAmount = res.data.data[0].creditAmount
+							}
+							
+						} else {
+							console.log(res.data.msg)
+						}
+				    },
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
+			// 开通花呗账户
+			openHuaBeiAccount:function() {
+				this.$api.loading("正在加载")
 				
+				uni.request({
+				    url: this.BASE_URL+'/login/open/creditAccount',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+				    data: {
+						hbOpen: "1",
+						hbfqOpen: "1",
+						paymentOpen: "1"
+				    },
+				    success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							_this.$api.msg("开通成功")
+							
+							_this.queryHuabeiAmount()
+							
+						} else {
+							_this.$api.alert(res.data.msg)
+						}
+				    },
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
+			getUserInfo: function(e) {
 				uni.request({
 				    url: this.BASE_URL+'/login/query/userInfo',
 					method: 'POST',

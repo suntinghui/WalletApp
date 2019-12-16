@@ -66,7 +66,7 @@
 				</view>
 				<view class="padding-xs flex justify-between">
 					<view class="text-gray">支付方式：</view>
-					<view class="text-black">{{bankList[current].accountNbrFormat}}</view>
+					<view class="text-black">{{bankList[current].bankName}} [{{bankList[current].accountNbr}}]</view>
 				</view>
 				<view class="padding-xs flex justify-between">
 					<view class="text-gray">金额：</view>
@@ -149,14 +149,23 @@
 			_this = this;
 		
 			this.getAccountList();
+			
+			// 如果扫的是动态码，则通知服务器
+			if (this.transferInfo.codeType == '3') {
+				this.transferDynamicStatus();
+			}
 		},
 
 		methods: {
 			...mapMutations(['updateToken', "setUserInfo"]),
 			
 			doPay() {
-				this.$refs.pwdInput.clear();
-				this.showPwdModal = true;
+				if(this.amount == '' || Number(this.amount) == 0) {
+					this.$api.msg("请输入付款金额")
+				} else {
+					this.$refs.pwdInput.clear();
+					this.showPwdModal = true;
+				}
 			},
 			
 			change(e) {
@@ -199,7 +208,7 @@
 						'token': _this.token
 					},
 					data: {
-						accountType: ''
+						accountType: _this.transferInfo.spAccountType.toString()
 					},
 					success: (res) => {
 						console.log(JSON.stringify(res));
@@ -293,6 +302,33 @@
 			// 订单收款码
 			transferOrderPay() {
 				
+			},
+			
+			// 动态码通知用户状态
+			transferDynamicStatus() {				
+				uni.request({
+					url: this.BASE_URL + '/transfer/scan/pay/status/inputPwd',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						code: _this.scancode
+					},
+					success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							_this.$token.updateToken(res.header.token);
+						} else {
+							console.log(res.data.msg)
+						}
+					},
+					fail: (res) => {},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
 			},
 			
 			
