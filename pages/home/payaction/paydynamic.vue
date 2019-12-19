@@ -69,12 +69,16 @@
 					this.$api.msg("请输入付款金额")
 				} else {
 					// 等待用户操作
+					this.transferDynamicPay();
 				}
 			},
 			
 			
 			// 动态收款处理
 			transferDynamicPay() {
+				console.log(_this.scancode+"====="+_this.amount)
+				console.log(""+new Date().getTime())
+				
 				uni.request({
 					url: this.BASE_URL + '/transfer/scan/code/dynamic/pay',
 					method: 'POST',
@@ -85,10 +89,11 @@
 					data: {
 						code: _this.scancode,
 						transferAmount:_this.amount,
-						orderNbr: new Date().getTime()
+						orderNbr: ""+new Date().getTime()
 					},
 					success: (res) => {
 						console.log(JSON.stringify(res));
+						
 						if (res.data.code == "B0000") {
 							
 							_this.$token.updateToken(res.header.token);
@@ -98,7 +103,6 @@
 							})
 							
 						} else {
-							
 							 _this.startRefreshPayStatusTask()
 							
 							_this.$api.loading(res.data.msg)
