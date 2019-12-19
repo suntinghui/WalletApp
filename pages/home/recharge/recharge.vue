@@ -126,7 +126,6 @@
 			...mapMutations(['updateToken', "setUserInfo"]),
 			
 			change(e) {
-				console.log(e.show)
 			},
 			
 			getPwd(val) {

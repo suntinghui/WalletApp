@@ -3,15 +3,15 @@
 
 		<view class="cu-list menu-avatar ">
 			<view class="cu-item bg-title">
-				<image class="cu-avatar round lg" :src="this.userInfo.userPhoto" >
+				<image class="cu-avatar round lg" src="https://profile.csdnimg.cn/9/3/F/3_wltsysterm" >
 				</image>
 				<view class="content text-white">
 					<view class="">
-						<view class="text-cut">{{this.userInfo.customerName}}</view>
+						<view class="text-cut">{{userInfo.customerName}}</view>
 					</view>
 					<view class=" flex">
 						<view class="text-cut">
-							{{this.userInfo.mobileNbr}}
+							{{userInfo.mobileNbr}}
 						</view>
 					</view>
 				</view>

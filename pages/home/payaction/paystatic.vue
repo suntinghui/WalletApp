@@ -149,11 +149,6 @@
 			_this = this;
 		
 			this.getAccountList();
-			
-			// 如果扫的是动态码，则通知服务器
-			if (this.transferInfo.codeType == '3') {
-				this.transferDynamicStatus();
-			}
 		},
 
 		methods: {
@@ -294,47 +289,7 @@
 				});
 			},
 			
-			// 动态收款处理
-			transferDynamicPay() {
-				
-			},
-			
-			// 订单收款码
-			transferOrderPay() {
-				
-			},
-			
-			// 动态码通知用户状态
-			transferDynamicStatus() {				
-				uni.request({
-					url: this.BASE_URL + '/transfer/scan/pay/status/inputPwd',
-					method: 'POST',
-					header: {
-						'Content-Type': 'application/x-www-form-urlencoded',
-						'token': _this.token
-					},
-					data: {
-						code: _this.scancode
-					},
-					success: (res) => {
-						console.log(JSON.stringify(res));
-						if (res.data.code == "B0000") {
-							_this.$token.updateToken(res.header.token);
-						} else {
-							console.log(res.data.msg)
-						}
-					},
-					fail: (res) => {},
-					complete: (res) => {
-						uni.hideLoading();
-					}
-				});
-			},
-			
-			
 		},
-		
-		
 
 	}
 </script>

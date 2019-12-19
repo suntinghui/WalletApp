@@ -25,15 +25,13 @@
 				<view class="cu-item">
 					<navigator url="../../huabei/byBill/byBill" hover-class="none">
 						<view class="tui-grid-label">我的账单</view>
-						<view class="text-sm text-gray" style="height: 40rpx;">还款日本月{{userInfo.repaymentDate}}号</view>
-						<view class=" text-gray"></view>
+						<view class="text-sm text-gray margin-top" style="height: 40rpx;">还款日本月{{userInfo.repaymentDate}}号</view>
 					</navigator>
 				</view>
 				<view class="cu-item">
 					<view @click="showDetail">
 						<view class="tui-grid-label">钱包花呗</view>
-						<view class="text-sm text-gray" style="height: 40rpx;">通用额度</view>
-						<view class="text-danger font-bold text-price">{{userInfo.creditAmount}}</view>
+						<view class="text-danger font-bold text-price margin-top">{{userInfo.creditAmount}}</view>
 					</view>
 				</view>
 			</view>

@@ -5,10 +5,10 @@
 				<image src="../../../static/slider-01.png" class="slider-item" mode="widthFix"></image>
 			</swiper-item>
 			<swiper-item>
-				<image src="../../../static/slider-01.png" class="slider-item" mode="widthFix"></image>
+				<image src="../../../static/slider-02.jpg" class="slider-item" mode="widthFix"></image>
 			</swiper-item>
 			<swiper-item>
-				<image src="../../../static/slider-01.png" class="slider-item" mode="widthFix"></image>
+				<image src="../../../static/slider-03.jpg" class="slider-item" mode="widthFix"></image>
 			</swiper-item>
 		</swiper>
 		<view class="cu-list grid col-3 no-border text-grid card-menu shadow shadow-lg" style="margin-top: 20px; position: relative; z-index: 9999;">
@@ -57,8 +57,7 @@
 
 		<view class="cu-list menu sm-border card-menu shadow shadow-lg">
 			<view class="cu-item arrow">
-				<!-- <navigator url="../../home/billLists/billLists" hover-class="none" class="content"> -->
-				<navigator url="../../home/payaction/payaction" hover-class="none" class="content">
+				<navigator url="../../home/billLists/billLists" hover-class="none" class="content">
 					<image src="/static/icon-zhangdan.png" class="png" mode="aspectFit"></image>
 					<text class="text-grey">账单</text>
 				</navigator>
@@ -190,9 +189,19 @@
 						console.log("===" + JSON.stringify(res));
 			
 						if (res.data.code == "B0000") {
-							uni.navigateTo({
-								url:'/pages/home/payaction/payaction?data='+JSON.stringify(res.data.data)+'&scancode='+ code
-							})
+							var codeType = res.data.data.codeType;
+							if (codeType == '0') { // 静态收款码
+								uni.navigateTo({
+									url:'/pages/home/payaction/paystatic?data='+JSON.stringify(res.data.data)+'&scancode='+ code
+								})
+								
+							} else if (codeType == '3') { // 动态收款码
+								uni.navigateTo({
+									url:'/pages/home/payaction/paydynamic?data='+JSON.stringify(res.data.data)+'&scancode='+ code
+								})
+							} else {
+								_this.$api.alert("暂不支持该交易类型")
+							}
 							
 						} else {
 							_this.$api.alert(res.data.msg);

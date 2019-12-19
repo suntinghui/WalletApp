@@ -8,6 +8,12 @@
 			}
 		},
 		{
+			"path": "pages/login/login_mer",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
 			"path": "pages/login/register",
 			"style": {
 				"navigationBarTitleText": "注册"
@@ -245,11 +251,17 @@
 			}
         }
         ,{
-            "path" : "pages/home/payaction/payaction",
+            "path" : "pages/home/payaction/paydynamic",
             "style" : {
 				"navigationBarTitleText": "付款"
 			}
-        }
+        },
+		{
+		    "path" : "pages/home/payaction/paystatic",
+		    "style" : {
+				"navigationBarTitleText": "付款"
+			}
+		}
         ,{
             "path" : "pages/home/transferSuccess/transferSuccess",
             "style" : {

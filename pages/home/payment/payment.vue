@@ -11,11 +11,12 @@
 
 			<view class="padding-tb">
 				<tki-qrcode class="qrimg" v-if="ifShow" cid="qrcode1" ref="qrcode" :val="val" :size="size" :unit="unit" :icon="icon"
-				 :iconSize="iconsize" :lv="lv" :onval="onval" :loadMake="loadMake" :usingComponents="true" loadingText="正在加载" @result="qrR" />
+				 :iconSize="iconsize" :lv="lv" :onval="onval" :loadMake="loadMake" :usingComponents="true" loadingText="正在加载"
+				 @result="qrR" />
 			</view>
 
 		</view>
-		
+
 		<view class="cu-list menu bg-white select-payment solid-top">
 			<view class="cu-item arrow border-top">
 				<button class="cu-btn content" @tap="showModal" data-target="bottomModal">
@@ -33,7 +34,7 @@
 					<view class="action text-grey" @tap="hideModal">取消</view>
 					<view class="action text-green" @tap="hideModal">确定</view>
 				</view>
-				
+
 				<view class="uni-list">
 					<radio-group class="block" v-for="(item, index) in bankList" @change="RadioChange">
 						<view class="cu-form-group">
@@ -47,13 +48,43 @@
 				</view>
 			</view>
 		</view>
+
+		<!--  popup -->
+		<uni-popup class="radius" :show="showPwdModal" :mask-click="false" @change="change">
+			<view class="pay-modal">
+				<view class="padding-bottom solid-bottom text-center">请输入支付密码</view>
+				<view class="padding-xs flex justify-between">
+					<view class="text-gray">支付方式：</view>
+					<view class="text-black">{{bankList[current].bankName}} [{{bankList[current].accountNbr}}]</view>
+				</view>
+				<view class="padding-xs flex justify-between">
+					<view class="text-gray">金额：</view>
+					<view class="text-black text-price text-bold text-xxl">{{rechargeAmount}}</view>
+				</view>
+
+				<view class="padding-tb-xs pay-modal-pwd">
+					<validCode ref="pwdInput" :maxlength="6" :isPwd="true" @finish="getPwd"></validCode>
+				</view>
+
+				<view class="flex p-xs margin-sm">
+					<button class="flex-sub bg-red cu-btn lg" @tap="cancelAction()">取消</button>
+					<button class="flex-twice bg-green margin-left-lg cu-btn lg" @tap="paymentAction()">确认充值</button>
+				</view>
+
+			</view>
+		</uni-popup>
+		<!--  popup  end -->
+
 	</view>
 </template>
 
 <script>
+	import permision from "@/common/permission.js"
 	import tkiQrcode from "../../../components/tki-qrcode/tki-qrcode.vue"
 	import tkiBarcode from "../../../components/tki-barcode/tki-barcode.vue"
 	import otp from '../../../common/otp.js'
+	import uniPopup from "@/components/uni-popup/uni-popup.vue"
+	import validCode from '@/components/p-validCode/validCode.vue'
 
 	import {
 		mapMutations,
@@ -64,8 +95,18 @@
 
 
 	export default {
+		components: {
+			uniPopup,
+			validCode,
+			tkiQrcode,
+			tkiBarcode,
+		},
+
 		data() {
 			return {
+				showPwdModal: false,
+				pwd: "",
+
 				bankList: [],
 
 				ifShow: true,
@@ -104,32 +145,49 @@
 
 				modalName: null,
 				current: 0,
-				
-				intervalID: 0,
-			}
-		},
 
-		components: {
-			tkiQrcode,
-			tkiBarcode,
+				intervalCodeID: 0,
+				intervalPayID: 0,
+			}
 		},
 
 		computed: {
 			...mapGetters(["token", "userInfo"]),
 		},
-		
+
 		onLoad: function() {
 			_this = this;
 
 			this.getAccountList();
 		},
-		
+
 		onUnload() {
 			this.stopRefreshCodeTask();
+			this.stopRefreshPayStatusTask();
 		},
 
 		methods: {
 			...mapMutations(['updateToken', "setUserInfo"]),
+
+			getPwd(val) {
+				this.pwd = val
+			},
+
+			cancelAction() {
+				this.showPwdModal = false
+				this.cancelTransferAction();
+			},
+
+			okAction() {
+				this.pwd = this.$refs.pwdInput.val;
+				console.log(this.pwd);
+
+				if (this.pwd.length != 6) {
+					this.$api.msg("请输入6位交易密码")
+				} else {
+					this.transferStaticPay();
+				}
+			},
 
 			showModal(e) {
 				this.modalName = e.currentTarget.dataset.target
@@ -146,7 +204,7 @@
 						break;
 					}
 				}
-				
+
 				_this.refreshQRCode();
 			},
 
@@ -168,7 +226,7 @@
 			},
 
 			code128(v) {},
-			
+
 			showCode() {
 				this.$api.alert(this.val)
 			},
@@ -190,9 +248,9 @@
 
 							_this.bankList = res.data.data;
 							if (_this.bankList.length > 0) {
-								
+
 								_this.refreshQRCode();
-								
+
 								_this.startRefreshCodeTask()
 
 							} else {
@@ -210,7 +268,6 @@
 								})
 							}
 
-
 							_this.$token.updateToken(res.header.token);
 
 						} else {
@@ -223,16 +280,162 @@
 					}
 				});
 			},
-			
-			startRefreshCodeTask() {
-				this.intervalID = setInterval(this.refreshQRCode, 10*1000);
+
+			refreshPayStatus: function() {
+				uni.request({
+					url: this.BASE_URL + '/transfer/scan/pay/status',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						code: _this.val
+					},
+					success: (res) => {
+						console.log(JSON.stringify(res));
+
+						if (res.data.code == "B0000") {
+							if (res.data.data.status == '2') {
+								if (_this.showPwdModal = false) {
+									_this.$refs.pwdInput.clear();
+									_this.showPwdModal = true;
+								}
+							} else if (res.data.data.status == '6') {
+								uni.navigateTo({
+									url:'/pages/home/transferSuccess/transferSuccess'
+								})
+							}
+
+						}
+						_this.$token.updateToken(res.header.token);
+
+					},
+					fail: (res) => {},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
 			},
 			
+			// 告知服务器正在输入密码
+			inputPwdAction() {
+				uni.request({
+					url: this.BASE_URL + '/transfer/scan/pay/status/input',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						code: _this.bankList[_this.current].accountNbr,
+						// 1，正在输入密码；2，交易取消
+						codeType: "1"
+					},
+					success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							
+							_this.$token.updateToken(res.header.token);
+							
+							uni.navigateTo({
+								url:'/pages/home/transferSuccess/transferSuccess'
+							})
+							
+						} else {
+							_this.$api.alert(res.data.msg)
+						}
+					},
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
+			cancelTransferAction() {
+				uni.request({
+					url: this.BASE_URL + '/transfer/scan/pay/status/input',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						code: _this.bankList[_this.current].accountNbr,
+						// 1，正在输入密码；2，交易取消
+						codeType: "2"
+					},
+					success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							_this.$api.msg("交易已取消")
+						} else {
+							_this.$api.alert(res.data.msg)
+						}
+					},
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+			
+			
+			paymentAction: function() {
+				uni.request({
+					url: this.BASE_URL + '/transfer/scan/pay/authorize',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'token': _this.token
+					},
+					data: {
+						code: _this.bankList[_this.current].accountNbr,
+						transferPassword: _this.pwd
+					},
+					success: (res) => {
+						console.log(JSON.stringify(res));
+						if (res.data.code == "B0000") {
+							
+							_this.$token.updateToken(res.header.token);
+							
+							uni.navigateTo({
+								url:'/pages/home/transferSuccess/transferSuccess'
+							})
+			
+						} else {
+							_this.$api.alert(res.data.msg)
+						}
+					},
+					fail: (res) => {
+					},
+					complete: (res) => {
+						uni.hideLoading();
+					}
+				});
+			},
+
+			startRefreshCodeTask() {
+				this.intervalCodeID = setInterval(this.refreshQRCode, 30 * 1000);
+			},
+
 			stopRefreshCodeTask() {
 				console.log("停止定时刷新。。。")
-				clearInterval(this.intervalID);
+				clearInterval(this.intervalCodeID);
 			},
-			
+
+			startRefreshPayStatusTask() {
+				this.intervalPayID = setInterval(this.refreshPayStatus, 2 * 1000);
+			},
+
+			stopRefreshPayStatusTask() {
+				console.log("停止定时刷新。。。")
+				clearInterval(this.intervalPayID);
+			},
+
 			refreshQRCode() {
 				this.val = this.genOTP();
 			},
