@@ -3,56 +3,52 @@
 		<view class="cu-list grid col-1 no-border card-menu shadow shadow-lg">
 			<view class="text-center padding-sm">
 				<view class="text-gray">余额</view>
-				<view class="text-danger font-bold text-price text-xxl">{{merchantInfo.history.balance}}</view>
+				<view class="text-danger font-bold text-price text-sl">{{merchantInfo.history.balance}}</view>
 			</view>
 		</view>
 
-		<view class="cu-list grid col-2 no-border card-menu shadow shadow-lg">
-			<view class="text-center padding-sm solid-bottom">
-				<view class="text-black">总收入：{{merchantInfo.history.sumIn}}元</view>
-			</view>
-
-			<view class="text-center padding-sm solid-bottom">
-				<view class="text-black">退款：{{merchantInfo.history.sumBack}}元</view>
-			</view>
-
-			<view class="text-center padding-sm">
-				<view class="text-black">钱包：{{merchantInfo.history.amountQb}}元</view>
-				<view class="text-black margin-top">银行卡：{{merchantInfo.history.amountCard}}元</view>
-			</view>
-
-			<view class="text-center padding-sm">
-				<view class="text-black">花呗：{{merchantInfo.history.amountHb}}元</view>
-				<view class="text-black margin-top">花呗分期：{{merchantInfo.history.amountHbfq}}元</view>
-			</view>
-
+		<view class="cu-list grid col-4 no-border card-menu shadow shadow-lg">
+			<view class="text-right text-gray  padding-tb-sm solid-bottom">总收入</view>
+			<view class="text-price text-black padding-tb-sm solid-bottom text-lg text-bold">{{merchantInfo.history.sumIn}}</view>
+			<view class="text-right text-gray  padding-tb-sm solid-bottom">退款</view>
+			<view class="text-price text-black  padding-tb-sm solid-bottom text-lg text-bold">{{merchantInfo.history.sumBack}}</view>
+			
+			<view class="text-right text-gray  padding-tb-sm">钱包</view>
+			<view class="text-price text-black  padding-tb-sm text-lg text-bold">{{merchantInfo.history.amountQb}}</view>
+			
+			<view class="text-right text-gray  padding-tb-sm">银行卡</view>
+			<view class="text-price text-black  padding-tb-sm text-lg text-bold">{{merchantInfo.history.amountCard}}</view>
+			
+			<view class="text-right text-gray padding-tb-sm">花呗</view>
+			<view class="text-price text-black padding-tb-sm text-lg text-bold">{{merchantInfo.history.amountHb}}</view>
+			
+			<view class="text-right text-gray padding-tb-sm">花呗分期</view>
+			<view class="text-price text-black padding-tb-sm text-lg text-bold">{{merchantInfo.history.amountHbfq}}</view>
+			
 		</view>
 		
-		
-		<view class="cu-list grid col-2 no-border card-menu shadow shadow-lg">
-			<view class="text-center padding-sm solid-bottom">
-				<view class="text-black">收入：{{merchantInfo.today.sumIn}}元</view>
-			</view>
-		
-			<view class="text-center padding-sm solid-bottom">
-				<view class="text-black">退款：{{merchantInfo.today.sumBack}}元</view>
-			</view>
-		
-			<view class="text-center padding-sm">
-				<view class="text-black">钱包：{{merchantInfo.today.amountQb}}元</view>
-				<view class="text-black margin-top">银行卡：{{merchantInfo.today.amountCard}}元</view>
-			</view>
-		
-			<view class="text-center padding-sm">
-				<view class="text-black">花呗：{{merchantInfo.today.amountHb}}元</view>
-				<view class="text-black margin-top">花呗分期：{{merchantInfo.today.amountHbfq}}元</view>
-			</view>
-		
+		<view class="cu-list grid col-4 no-border card-menu shadow shadow-lg">
+			<view class="text-right text-gray  padding-tb-sm solid-bottom">收入</view>
+			<view class="text-price text-black padding-tb-sm solid-bottom text-lg text-bold">{{merchantInfo.today.sumIn}}</view>
+			<view class="text-right text-gray  padding-tb-sm solid-bottom">退款</view>
+			<view class="text-price text-black  padding-tb-sm solid-bottom text-lg text-bold">{{merchantInfo.today.sumBack}}</view>
+			
+			<view class="text-right text-gray  padding-tb-sm">钱包</view>
+			<view class="text-price text-black  padding-tb-sm text-lg text-bold">{{merchantInfo.today.amountQb}}</view>
+			
+			<view class="text-right text-gray  padding-tb-sm">银行卡</view>
+			<view class="text-price text-black  padding-tb-sm text-lg text-bold">{{merchantInfo.today.amountCard}}</view>
+			
+			<view class="text-right text-gray padding-tb-sm">花呗</view>
+			<view class="text-price text-black padding-tb-sm text-lg text-bold">{{merchantInfo.today.amountHb}}</view>
+			
+			<view class="text-right text-gray padding-tb-sm">花呗分期</view>
+			<view class="text-price text-black padding-tb-sm text-lg text-bold">{{merchantInfo.today.amountHbfq}}</view>
+			
 		</view>
-
-
-
+		
 	</view>
+	
 </template>
 
 <script>
