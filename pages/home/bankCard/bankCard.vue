@@ -3,6 +3,11 @@
 		<view class="bg-white">
 			<view class="cu-card case no-card">
 				<view class="cu-item shadow">
+					
+					<view v-if="bankList.length == 0" class="text-center margin-tb-xl">
+						您还未添加银行卡
+					</view>
+					
 					<view class="cu-list menu-avatar" v-for="(item, index) in bankList" v-key="index" >
 						
 						<navigator :url="'../../home/bankCardDetail/bankCardDetail?data=' + JSON.stringify(item)" hover-class="none" class="cu-item">
@@ -77,6 +82,10 @@
 						if (res.data.code == "B0000") {
 							
 							_this.bankList = res.data.data;
+							
+							if (_this.bankList[0].accountNbr == null) {
+								_this.bankList = [];
+							}
 							
 							_this.$token.updateToken(res.header.token);
 							

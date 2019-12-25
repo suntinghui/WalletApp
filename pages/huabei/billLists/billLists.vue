@@ -106,7 +106,7 @@
 						'token': _this.token
 					},
 					data: {
-						accountType: '10,205,206,301,311,30,31,399',
+						accountType: '205,206',
 						queryType: '0',
 						start: this.currentPage,
 						length: this.pageSize

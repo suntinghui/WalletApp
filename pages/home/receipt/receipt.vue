@@ -179,7 +179,6 @@
 						code: _this.val,
 					},
 					success: (res) => {
-						//console.log("===" + JSON.stringify(res));
 			
 						if (res.data.code == "B0000") {
 							_this.payerList = res.data.data;

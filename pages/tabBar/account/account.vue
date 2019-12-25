@@ -3,7 +3,7 @@
 
 		<view class="cu-list menu-avatar ">
 			<view class="cu-item bg-title">
-				<image class="cu-avatar round lg" src="https://profile.csdnimg.cn/9/3/F/3_wltsysterm" >
+				<image class="cu-avatar round lg" :src="url + userInfo.userPhoto " @tap="chooseImg">
 				</image>
 				<view class="content text-white">
 					<view class="">
@@ -17,7 +17,7 @@
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="cu-list menu sm-border">
 			<view class="cu-item arrow" @tap="enterChangeMobile">
 				<view class="content">
@@ -64,33 +64,34 @@
 </template>
 <script>
 	var _this;
-	
+
 	import {
-		mapMutations, mapGetters
+		mapMutations,
+		mapGetters
 	} from 'vuex';
 
 	export default {
 		data() {
 			return {
-
+				url: this.BASE_URL
 			};
 		},
-		
-		onLoad:function(){
+
+		onLoad: function() {
 			_this = this;
 		},
-		
-		onShow:function(){
+
+		onShow: function() {
 			this.getUserInfo();
 		},
-		
+
 		computed: {
 			...mapGetters(["token", "userInfo"]),
 		},
-		
+
 		methods: {
 			...mapMutations(['updateToken', "setUserInfo", "logout"]),
-			
+
 			enterChangeMobile: function(e) {
 				uni.navigateTo({
 					url: '../../account/change-mobile1/change-mobile1'
@@ -123,30 +124,28 @@
 					url: '../../account/feedback/feedback'
 				});
 			},
-			
+
 			getUserInfo: function(e) {
 				uni.request({
-				    url: this.BASE_URL+'/login/query/userInfo',
+					url: this.BASE_URL + '/login/query/userInfo',
 					method: 'POST',
 					header: {
 						'Content-Type': 'application/x-www-form-urlencoded',
 						'token': _this.token
 					},
-				    data: {
-				    },
-				    success: (res) => {
+					data: {},
+					success: (res) => {
 						console.log(JSON.stringify(res));
 						if (res.data.code == "B0000") {
 							_this.setUserInfo(res.data.data);
-							
+
 							_this.$token.updateToken(res.header.token);
-							
+
 						} else {
 							console.log(res.data.msg)
 						}
-				    },
-					fail: (res) => {
 					},
+					fail: (res) => {},
 					complete: (res) => {
 						uni.hideLoading();
 					}
@@ -160,34 +159,34 @@
 					success: function(res) {
 						if (res.confirm) {
 							_this.logoutAction();
-							
+
 						} else if (res.cancel) {
 							// do nothing
 						}
 					}
 				})
 			},
-			
-			logoutAction: function (e) {
+
+			logoutAction: function(e) {
 				uni.showLoading({
-				    title: '加载中'
+					title: '加载中'
 				});
-				
+
 				uni.request({
-				    url: this.BASE_URL+'/login/logout',
+					url: this.BASE_URL + '/login/logout',
 					method: 'POST',
 					header: {
 						'Content-Type': 'application/x-www-form-urlencoded',
 						'token': _this.token
 					},
-				    data: {
-				        
-				    },
-				    success: (res) => {
-						console.log("==="+JSON.stringify(res));
-						
+					data: {
+
+					},
+					success: (res) => {
+						console.log("===" + JSON.stringify(res));
+
 						this.logout();
-						
+
 						uni.reLaunch({
 							url: '../../login/login',
 							success() {
@@ -198,16 +197,52 @@
 								})
 							}
 						})
-						
-				    },
+
+					},
 					fail: (res) => {
-						console.log("fail:"+res.data);
+						console.log("fail:" + res.data);
 					},
 					complete: (res) => {
 						uni.hideLoading();
 					}
 				});
-			}
+			},
+
+			chooseImg() { //选择图片
+				uni.chooseImage({
+					sourceType: ["camera", "album"],
+					sizeType: "compressed",
+					count: 1,
+					success: (res) => {
+						console.log(res.tempFilePaths[0])
+						uni.uploadFile({
+							url: this.BASE_URL + '/login/modify/upload/userPhoto',
+							filePath: res.tempFilePaths[0],
+							name: 'photo',
+							header: {
+								"Content-Type": "multipart/form-data",
+								'token': _this.token
+							},
+							success: (uploadFileRes) => {
+								var res = JSON.parse(uploadFileRes.data);
+								
+								if (res.code == 'B0000') {
+									_this.$api.msg("用户头像已上传成功")
+									_this.getUserInfo();
+								} else {
+									_this.$api.alert(res.msg);
+								}
+							},
+							fail: (res) => {
+								console.log(res.data)
+							},
+							complete: (res) => {
+								uni.hideLoading();
+							}
+						});
+					}
+				})
+			},
 
 		}
 	}

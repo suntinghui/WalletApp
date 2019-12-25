@@ -10,7 +10,7 @@
 			</view>
 			
 			<view class="padding flex flex-direction">
-					<button class="cu-btn bg-green margin-tb-sm lg radius" @tap="doPay()">确定</button>
+					<button class="cu-btn bg-green margin-tb-sm lg radius" :loading="loading" @tap="doPay()">{{tips}}</button>
 			</view>
 			
 		</view>
@@ -20,6 +20,8 @@
 </template>
 
 <script>
+	
+	import permision from "@/common/permission.js"
 	
 	import {
 		mapMutations,
@@ -38,6 +40,9 @@
 				transferInfo: {},
 				amount: "",
 				scancode:"",
+				
+				loading: false,
+				tips: '确定',
 				
 				intervalPayID: 0,
 			}
@@ -77,7 +82,8 @@
 			// 动态收款处理
 			transferDynamicPay() {
 				console.log(_this.scancode+"====="+_this.amount)
-				console.log(""+new Date().getTime())
+				
+				this.loading = true;
 				
 				uni.request({
 					url: this.BASE_URL + '/transfer/scan/code/dynamic/pay',
@@ -94,9 +100,13 @@
 					success: (res) => {
 						console.log(JSON.stringify(res));
 						
+						_this.tips = res.data.msg;
+						
 						if (res.data.code == "B0000") {
 							
 							_this.$token.updateToken(res.header.token);
+							
+							_this.loading = false;
 							
 							uni.navigateTo({
 								url:'/pages/home/transferSuccess/transferSuccess'
@@ -122,6 +132,9 @@
 			stopRefreshPayStatusTask() {
 				console.log("停止定时刷新。。。")
 				clearInterval(this.intervalPayID);
+				
+				_this.loading = false;
+				_this.tips = '确定';
 			},
 			
 			refreshPayStatus: function() {
@@ -133,18 +146,42 @@
 						'token': _this.token
 					},
 					data: {
-						code: _this.val
+						code: _this.scancode
 					},
 					success: (res) => {
-						console.log(JSON.stringify(res));
-			
+						console.log("++++++++"+JSON.stringify(res));
+						
 						if (res.data.code == "B0000") {
-							if (res.data.data.status == '6') {
+							
+							_this.loading = true;
+							_this.tips = res.data.data[0].statusMsg;
+							
+							if (res.data.data[0].status == '6' || res.data.data[0].status == 'pay' ) {
+								_this.stopRefreshPayStatusTask();
+								
 								uni.navigateTo({
 									url:'/pages/home/transferSuccess/transferSuccess'
 								})
-							}
+							} 
 			
+						} else {
+							_this.loading = false;
+							_this.tips = '确定';
+							
+							_this.stopRefreshPayStatusTask();
+							
+							uni.showModal({
+							    title: '提示',
+							    content: res.data.msg,
+								showCancel:false,
+							    success: function (res) {
+							        if (res.confirm) {
+										uni.switchTab({
+										    url: '/pages/tabBar/home/home'
+										});
+							        } 
+							    }
+							});
 						}
 						_this.$token.updateToken(res.header.token);
 			

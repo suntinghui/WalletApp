@@ -75,7 +75,8 @@
 		}, {
 			"path": "pages/home/billLists/billLists",
 			"style": {
-				"navigationBarTitleText": "账单"
+				"navigationBarTitleText": "账单",
+				"enablePullDownRefresh": true
 			}
 		}, {
 			"path": "pages/home/payment/payment",
@@ -212,6 +213,11 @@
 			"style": {
 				"navigationBarTitleText": "账单分期"
 			}
+		},{
+			"path": "pages/huabei/billLists/billLists",
+			"style": {
+				"navigationBarTitleText": "花呗账单"
+			}
 		}, {
 			"path": "pages/huabei/payment-code/payment-code",
 			"style": {
@@ -272,6 +278,18 @@
             "path" : "pages/home/transferFailure/transferFailure",
             "style" : {
 				"navigationBarTitleText": "交易失败"
+			}
+        }
+        ,{
+            "path" : "pages/tabBar/mer-home/mer-home",
+            "style" : {
+				"navigationBarTitleText": "钱包"
+			}
+        }
+        ,{
+            "path" : "pages/account/update-userinfo/update-userinfo",
+            "style" : {
+				"navigationBarTitleText": "用户信息"
 			}
         }
     ],

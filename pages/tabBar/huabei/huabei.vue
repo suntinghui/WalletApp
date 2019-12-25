@@ -1,6 +1,5 @@
 <template>
 	<view>
-		
 		<view class="text-center" v-if="!hasOpenHuabeiAccount">
 			<view class="text-sm text-gray" style="margin-top: 60px;" >您尚未开通花呗信用账户</view>
 			<button class="cu-btn round line-blue shadow margin-top"  @tap="openHuaBeiAccount()">立即开通</button>
@@ -18,18 +17,18 @@
 					这月买  下月还  {{userInfo.nextMonthRepaymentBalance}}费用
 				</view>
 				<view class="m-t-10">
-					<button class="cu-btn round bg-white" @click="showDetail">查看详情</button>
+					<button class="cu-btn round bg-white" >查看详情</button>
 				</view>
 			</view>
 			<view class="cu-list grid col-2 no-border card-menu margin-top">
 				<view class="cu-item">
-					<navigator url="../../huabei/byBill/byBill" hover-class="none">
+					<navigator url="../../huabei/billLists/billLists" hover-class="none">
 						<view class="tui-grid-label">我的账单</view>
 						<view class="text-sm text-gray margin-top" style="height: 40rpx;">还款日本月{{userInfo.repaymentDate}}号</view>
 					</navigator>
 				</view>
 				<view class="cu-item">
-					<view @click="showDetail">
+					<view>
 						<view class="tui-grid-label">钱包花呗</view>
 						<view class="text-danger font-bold text-price margin-top">{{userInfo.creditAmount}}</view>
 					</view>
@@ -48,7 +47,7 @@
 						<text class="text-grey">账单分期</text>
 					</view>
 				</view>
-				<view class="cu-item arrow" @tap="showPaymentCode">
+				<view class="cu-item arrow" @tap="showPaymentCode" style="display: none;">
 					<view class="content">
 						<image src="/static/icon-fenqima.png" class="png" mode="aspectFit"></image>
 						<text class="text-grey">分期码</text>

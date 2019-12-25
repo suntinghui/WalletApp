@@ -55,11 +55,11 @@
 				<view class="padding-bottom solid-bottom text-center">请输入支付密码</view>
 				<view class="padding-xs flex justify-between">
 					<view class="text-gray">支付方式：</view>
-					<view class="text-black">{{bankList[current].bankName}} [{{bankList[current].accountNbr}}]</view>
+					<view class="text-black">{{bankList[current].bankName}} {{bankList[current].accountNbr}}</view>
 				</view>
 				<view class="padding-xs flex justify-between">
 					<view class="text-gray">金额：</view>
-					<view class="text-black text-price text-bold text-xxl">{{rechargeAmount}}</view>
+					<view class="text-black text-price text-bold text-xxl">{{transferInfo.transAmount}}</view>
 				</view>
 
 				<view class="padding-tb-xs pay-modal-pwd">
@@ -68,7 +68,7 @@
 
 				<view class="flex p-xs margin-sm">
 					<button class="flex-sub bg-red cu-btn lg" @tap="cancelAction()">取消</button>
-					<button class="flex-twice bg-green margin-left-lg cu-btn lg" @tap="paymentAction()">确认充值</button>
+					<button class="flex-twice bg-green margin-left-lg cu-btn lg" @tap="paymentAction()">确认</button>
 				</view>
 
 			</view>
@@ -148,17 +148,20 @@
 
 				intervalCodeID: 0,
 				intervalPayID: 0,
+				
+				transferInfo: {},
 			}
 		},
 
 		computed: {
-			...mapGetters(["token", "userInfo"]),
+			...mapGetters(["token", "userInfo", "accountList"]),
 		},
-
+		
 		onLoad: function() {
 			_this = this;
-
+			
 			this.getAccountList();
+			this.startRefreshPayStatusTask();
 		},
 
 		onUnload() {
@@ -167,10 +170,13 @@
 		},
 
 		methods: {
-			...mapMutations(['updateToken', "setUserInfo"]),
+			...mapMutations(['updateToken', "setUserInfo", "saveAccountList"]),
 
 			getPwd(val) {
 				this.pwd = val
+			},
+			
+			change(e) {
 			},
 
 			cancelAction() {
@@ -196,6 +202,15 @@
 			hideModal(e) {
 				this.modalName = null
 			},
+			
+			getDefaultAccount() {
+				this.bankList.forEach((item, index, arr) => {
+					if (item.isDefaultAccount == 'true') {
+						this.current = index;
+					}
+				})
+			},
+			
 
 			RadioChange(evt) {
 				for (let i = 0; i < this.bankList.length; i++) {
@@ -248,6 +263,10 @@
 
 							_this.bankList = res.data.data;
 							if (_this.bankList.length > 0) {
+								
+								_this.saveAccountList(res.data.data);
+								
+								console.log("----"+JSON.stringify(_this.accountList))
 
 								_this.refreshQRCode();
 
@@ -274,7 +293,16 @@
 							_this.$api.alert(res.data.msg)
 						}
 					},
-					fail: (res) => {},
+					fail: (res) => {
+						console.log("===================================")
+						console.log("++"+JSON.stringify(this.accountList));
+						this.bankList = this.accountList;
+						
+						this.getDefaultAccount();
+						this.refreshQRCode();
+						this.startRefreshCodeTask();
+						
+					},
 					complete: (res) => {
 						uni.hideLoading();
 					}
@@ -293,15 +321,17 @@
 						code: _this.val
 					},
 					success: (res) => {
-						console.log(JSON.stringify(res));
+						// console.log(JSON.stringify(res));
 
 						if (res.data.code == "B0000") {
-							if (res.data.data.status == '2') {
-								if (_this.showPwdModal = false) {
+							_this.transferInfo = res.data.data[0];
+							if (_this.transferInfo.status == '2') {
+								if (_this.showPwdModal == false) {
 									_this.$refs.pwdInput.clear();
 									_this.showPwdModal = true;
 								}
-							} else if (res.data.data.status == '6') {
+							} else if (_this.transferInfo.status == '6') {
+								
 								uni.navigateTo({
 									url:'/pages/home/transferSuccess/transferSuccess'
 								})
@@ -328,7 +358,7 @@
 						'token': _this.token
 					},
 					data: {
-						code: _this.bankList[_this.current].accountNbr,
+						code: _this.val,
 						// 1，正在输入密码；2，交易取消
 						codeType: "1"
 					},
@@ -337,6 +367,8 @@
 						if (res.data.code == "B0000") {
 							
 							_this.$token.updateToken(res.header.token);
+							
+							_this.stopRefreshCodeTask();
 							
 							uni.navigateTo({
 								url:'/pages/home/transferSuccess/transferSuccess'
@@ -363,7 +395,7 @@
 						'token': _this.token
 					},
 					data: {
-						code: _this.bankList[_this.current].accountNbr,
+						code: _this.val,
 						// 1，正在输入密码；2，交易取消
 						codeType: "2"
 					},
@@ -393,7 +425,7 @@
 						'token': _this.token
 					},
 					data: {
-						code: _this.bankList[_this.current].accountNbr,
+						code: _this.val,
 						transferPassword: _this.pwd
 					},
 					success: (res) => {
@@ -441,6 +473,8 @@
 			},
 
 			genOTP() {
+				console.log("default userId: "+this.userInfo.id);
+				
 				var newToken = this.token + this.bankList[this.current].id;
 				var result = otp.makeCode(newToken, this.userInfo.id);
 				console.log("result:" + result)

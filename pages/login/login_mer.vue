@@ -83,12 +83,20 @@
 			
 			startLogin() {
 				
-				if (this.phoneData == "") {
-					this.$api.msg("用户名不能为空")
+				if (this.bussinessLicenseCode == "") {
+					this.$api.msg("营业执照不能为空")
 					return;
 				}
-				if (this.passData == "") {
-					this.$api.msg("密码不能为空")
+				if (this.bussinessLicenseName == "") {
+					this.$api.msg("执照名称不能为空")
+					return;
+				}
+				if (this.customerWorkNbr == "") {
+					this.$api.msg("员工编号不能为空")
+					return;
+				}
+				if (this.loginPassword == "") {
+					this.$api.msg("登录密码不能为空")
 					return;
 				}
 

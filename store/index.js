@@ -9,7 +9,8 @@ const store = new Vuex.Store({
 		loginProvider: "",
 		openid: null,
 		token: null,
-		userInfo: null
+		userInfo: null,
+		accountList: null,
 	},
 	mutations: {
 		login(state, provider) {
@@ -44,6 +45,9 @@ const store = new Vuex.Store({
 		},
 		setUserInfo(state, info) {
 			state.userInfo = info;
+		},
+		saveAccountList(state, list) {
+			state.accountList = list;
 		}
 	},
 	
@@ -54,6 +58,9 @@ const store = new Vuex.Store({
 		},
 		userInfo(state) {
 			return state.userInfo;
+		},
+		accountList(state) {
+			return state.accountList;
 		}
 	},
 	
