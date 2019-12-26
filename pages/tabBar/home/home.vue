@@ -62,7 +62,7 @@
 					<text class="text-grey">账单</text>
 				</navigator>
 			</view>
-			<view class="cu-item arrow">
+			<view class="cu-item arrow" style="display: none;">
 				<navigator url="../mer-home/mer-home" hover-class="none" class="content">
 					<image src="/static/icon-shangjia.png" class="png" mode="aspectFit"></image>
 					<text class="text-grey">商家服务</text>
