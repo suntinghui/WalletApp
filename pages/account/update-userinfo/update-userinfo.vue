@@ -6,6 +6,11 @@
 		<view class="cu-list menu sm-border">
 			
 			<view class="cu-item">
+				<view class="title">用户名</view>
+				<input  name="input" type="text" v-model="customerName"></input>
+			</view>
+			
+			<view class="cu-item">
 				<view class="title">昵称</view>
 				<input  name="input" type="text" v-model="nickName"></input>
 			</view>
@@ -52,6 +57,7 @@
 				certificateType: 11,
 				certSelectIndex: 0,
 				
+				customerName: '',
 				nickName: '',
 				mobileNbr: '',
 				certificateNbr: '',
@@ -94,6 +100,7 @@
 						'token': _this.token
 					},
 				    data: {
+						customerName: _this.customerName,
 						nickName: _this.nickName,
 				        certificateType: _this.certificateType,
 						certificateNbr: _this.certificateNbr,
@@ -104,7 +111,18 @@
 						if (res.data.code == "B0000") {
 							_this.$token.updateToken(res.header.token);
 							
-							_this.$api.msg('修改成功')
+							uni.showModal({
+								title: "提示",
+								showCancel: false,
+								content: "操作成功",
+								success: function(res) {
+									if (res.confirm) {
+										uni.switchTab({
+											url: '../../tabBar/home/home'
+										});
+									}
+								}
+							})
 							
 							
 						} else {

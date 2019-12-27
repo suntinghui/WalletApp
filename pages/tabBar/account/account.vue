@@ -37,10 +37,10 @@
 					<text class="text-grey">修改支付密码</text>
 				</view>
 			</view>
-			<view class="cu-item arrow" @tap="enterPaysetting">
+			<view class="cu-item arrow" @tap="updateUserInfo">
 				<view class="content">
 					<image src="/static/icon-zhifushezhi.png" class="png" mode="aspectFit"></image>
-					<text class="text-grey">支付设置</text>
+					<text class="text-grey">修改用户信息</text>
 				</view>
 			</view>
 			<view class="cu-item arrow" @tap="enterBiopayment">
@@ -107,10 +107,9 @@
 					url: '../../account/update-paypwd/update-paypwd'
 				});
 			},
-			enterPaysetting: function(e) {
+			updateUserInfo: function(e) {
 				uni.navigateTo({
-					//url: '../../account/paysetting/paysetting'
-					url: '../../common/testTransfer'
+					url: '../../account/update-userinfo/update-userinfo'
 				});
 			},
 			enterBiopayment: function(e) {

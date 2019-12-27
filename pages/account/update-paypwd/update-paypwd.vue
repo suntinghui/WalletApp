@@ -99,7 +99,7 @@
 				uni.showLoading({
 				    title: '加载中'
 				});
-				console.log(_this.token)
+				
 				uni.request({
 				    url: this.BASE_URL+'/login/modify/passwd',
 					method: 'POST',
@@ -122,8 +122,8 @@
 								showCancel: false,
 							    success: function (res) {
 							        if (res.confirm) {
-							            uni.navigateBack({
-							                delta: 1
+							            uni.switchTab({
+							            	url: '../../tabBar/home/home'
 							            });
 							        } 
 							    }

@@ -266,8 +266,6 @@
 								
 								_this.saveAccountList(res.data.data);
 								
-								console.log("----"+JSON.stringify(_this.accountList))
-
 								_this.refreshQRCode();
 
 								_this.startRefreshCodeTask()
@@ -294,8 +292,6 @@
 						}
 					},
 					fail: (res) => {
-						console.log("===================================")
-						console.log("++"+JSON.stringify(this.accountList));
 						this.bankList = this.accountList;
 						
 						this.getDefaultAccount();

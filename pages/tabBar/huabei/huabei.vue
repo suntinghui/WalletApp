@@ -16,7 +16,7 @@
 				<view>
 					这月买  下月还  {{userInfo.nextMonthRepaymentBalance}}费用
 				</view>
-				<view class="m-t-10">
+				<view class="m-t-10" style="display: none;">
 					<button class="cu-btn round bg-white" >查看详情</button>
 				</view>
 			</view>

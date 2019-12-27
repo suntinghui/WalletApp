@@ -125,6 +125,33 @@
 						if (res.data.code == "B0000") {
 							_this.val = res.data.data;
 
+						} else if (res.data.code == "B0001" && res.data.errorCode == "B30010"){ // 用户信息
+							uni.showModal({
+								title: "提示",
+								showCancel: false,
+								content: res.data.msg,
+								success: function(res) {
+									if (res.confirm) {
+										uni.navigateTo({
+											url: '../../account/update-userinfo/update-userinfo'
+										});
+									}
+								}
+							})
+						} else if (res.data.code == "B0001" && res.data.errorCode == "B00022"){ // 交易密码
+							uni.showModal({
+								title: "提示",
+								showCancel: false,
+								content: res.data.msg,
+								success: function(res) {
+									if (res.confirm) {
+										uni.navigateTo({
+											url: '../../account/update-paypwd/update-paypwd'
+										});
+									}
+								}
+							})
+							
 						} else {
 							uni.showModal({
 								title: "提示",
